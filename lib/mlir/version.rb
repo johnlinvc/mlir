@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
-module Mlir
+module MLIR
   VERSION = "0.1.0"
 end

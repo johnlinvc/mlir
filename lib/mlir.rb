@@ -2,7 +2,7 @@
 
 require_relative "mlir/version"
 
-module Mlir
+module MLIR
   class Error < StandardError; end
   # Your code goes here...
 end
