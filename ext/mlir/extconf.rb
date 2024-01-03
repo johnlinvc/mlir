@@ -1,6 +1,18 @@
 require 'mkmf'
+require 'pathname'
+
+RbConfig::MAKEFILE_CONFIG['CC']='clang'
+RbConfig::MAKEFILE_CONFIG['CXX']='clang++'
+# homebrew_clang_dir = "/opt/homebrew/opt/llvm"
+# dir_config("clang","#{homebrew_clang_dir}/include","#{homebrew_clang_dir}/lib")
 llvm_dir = "/Users/johnlinvc/projs/ruby-mlir/llvm-project"
 dir_config("llvm", "#{llvm_dir}/mlir/include/", "#{llvm_dir}/build/lib/")
+
+Dir["#{llvm_dir}/build/lib/*.a"].each do |lib|
+  File.basename(lib) =~ /lib(.*)\.a/
+  have_library($1)
+end
+
 headers = %w[
 mlir-c/IR.h
 mlir-c/AffineExpr.h
@@ -16,13 +28,5 @@ mlir-c/Support.h
 headers.each do |header|
     have_header(header)
 end
-libs = headers.map do |header|
-    header =~ /mlir-c\/(.*)\.h/
-    "MLIRCAPI#{$~[1]}"
-end
-libs.each do |lib|
-    have_library(lib)
-end
-have_header("mlir-c/Debug.h")
-have_library("MLIRCAPIDebug")
-create_makefile("mlir/extension")
+
+create_makefile("ir")
