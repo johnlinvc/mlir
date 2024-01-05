@@ -8,12 +8,12 @@ class TestMLIR < Minitest::Test
   end
 
   def test_mlir_context_create
-    context = MLIR::CAPI.mlirContextCreate()
+    context = MLIR::CAPI.mlirContextCreate
     MLIR::CAPI.mlirContextDestroy(context)
   end
 
   def test_mlir_register_all_dialects
-    context = MLIR::CAPI.mlirContextCreate()
+    context = MLIR::CAPI.mlirContextCreate
     MLIR::CAPI.registerAllUpstreamDialects(context)
     MLIR::CAPI.mlirContextDestroy(context)
   end
@@ -23,10 +23,9 @@ class TestMLIR < Minitest::Test
   end
 
   def test_mlirContextGetOrLoadDialect
-    context = MLIR::CAPI.mlirContextCreate()
+    context = MLIR::CAPI.mlirContextCreate
     MLIR::CAPI.registerAllUpstreamDialects(context)
     MLIR::CAPI.mlirContextGetOrLoadDialect(context, MLIR::CAPI.mlirStringRefCreateFromCString("arith"))
     MLIR::CAPI.mlirContextDestroy(context)
   end
-
 end
