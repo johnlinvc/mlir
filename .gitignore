@@ -9,4 +9,5 @@
 *.o
 *.bundle
 *.swp
+*.dylib
 Makefile

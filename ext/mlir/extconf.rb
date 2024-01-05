@@ -8,11 +8,11 @@ RbConfig::MAKEFILE_CONFIG['CXX']='clang++'
 llvm_dir = "/Users/johnlinvc/projs/ruby-mlir/llvm-project"
 dir_config("llvm", "#{llvm_dir}/mlir/include/", "#{llvm_dir}/build/lib/")
 
-Dir["#{llvm_dir}/build/lib/*.a"].each do |lib|
-  File.basename(lib) =~ /lib(.*)\.a/
-  have_library($1)
-end
-
+# Dir["#{llvm_dir}/build/lib/*.a"].each do |lib|
+#   File.basename(lib) =~ /lib(.*)\.a/
+#   have_library($1)
+# end
+have_library("MLIR-C", "mlirContextCreate")
 headers = %w[
 mlir-c/IR.h
 mlir-c/AffineExpr.h

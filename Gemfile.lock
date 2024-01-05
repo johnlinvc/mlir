@@ -2,11 +2,13 @@ PATH
   remote: .
   specs:
     mlir (0.1.0)
+      ffi
 
 GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.2)
+    ffi (1.16.3)
     json (2.7.1)
     language_server-protocol (3.17.0.3)
     minitest (5.20.0)
