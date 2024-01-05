@@ -13,6 +13,10 @@ Style/StringLiteralsInInterpolation:
 Layout/LineLength:
   Max: 120
 
+Metrics/BlockLength:
+  AllowedMethods:
+  - describe
+
 require:
 - rubocop-minitest
 - rubocop-rake

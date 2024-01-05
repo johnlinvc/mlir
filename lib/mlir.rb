@@ -51,6 +51,11 @@ module MLIR
     attach_function :mlirContextAppendDialectRegistry, [MlirContext.by_value, MlirDialectRegistry.by_value], :void
     attach_function :mlirStringRefCreateFromCString, [:string], MlirStringRef.by_value
     attach_function :mlirContextGetOrLoadDialect, [MlirContext.by_value, MlirStringRef.by_value], :void
+    attach_function :mlirLocationUnknownGet, [MlirContext.by_value], MlirLocation.by_value
+    attach_function :mlirIndexTypeGet, [MlirContext.by_value], MlirType.by_value
+    attach_function :mlirTypeDump, [MlirType.by_value], :void
+    attach_function :mlirAttributeParseGet, [MlirContext.by_value, MlirStringRef.by_value], MlirAttribute.by_value
+    attach_function :mlirAttributeDump, [MlirAttribute.by_value], :void
 
     module_function
 
