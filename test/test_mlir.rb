@@ -2,29 +2,29 @@
 
 require "test_helper"
 
-class TestMLIR < Minitest::Test
-  def test_that_it_has_a_version_number
-    refute_nil ::MLIR::VERSION
+describe MLIR do
+  it "has a version number" do
+    refute_nil MLIR::VERSION
   end
 
-  def test_mlir_context_create
+  it "creates and destroys MLIR context" do
     context = MLIR::CAPI.mlirContextCreate
     MLIR::CAPI.mlirContextDestroy(context)
   end
 
-  def test_mlir_register_all_dialects
+  it "registers all upstream dialects" do
     context = MLIR::CAPI.mlirContextCreate
-    MLIR::CAPI.registerAllUpstreamDialects(context)
+    MLIR::CAPI.register_all_upstream_dialects(context)
     MLIR::CAPI.mlirContextDestroy(context)
   end
 
-  def test_mlirStringRefCreateFromCString
+  it "creates string ref from C string" do
     MLIR::CAPI.mlirStringRefCreateFromCString("hello")
   end
 
-  def test_mlirContextGetOrLoadDialect
+  it "gets or loads dialect" do
     context = MLIR::CAPI.mlirContextCreate
-    MLIR::CAPI.registerAllUpstreamDialects(context)
+    MLIR::CAPI.register_all_upstream_dialects(context)
     MLIR::CAPI.mlirContextGetOrLoadDialect(context, MLIR::CAPI.mlirStringRefCreateFromCString("arith"))
     MLIR::CAPI.mlirContextDestroy(context)
   end

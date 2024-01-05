@@ -4,8 +4,10 @@ require_relative "mlir/version"
 require "ffi"
 
 module MLIR
+  class Error < StandardError; end
+
+  # FFI wrapper for MLIR C API
   module CAPI
-    class Error < StandardError; end
     extend FFI::Library
     ffi_lib "MLIR-C"
     IR_C_API_STRUCT_SYMBOLS = %i[
@@ -34,6 +36,7 @@ module MLIR
       Kernel.const_set(struct_symbol, klass)
     end
 
+    # mapped from MlirStringRef
     class MlirStringRef < FFI::Struct
       layout :data, :pointer,
              :length, :size_t
@@ -51,11 +54,11 @@ module MLIR
 
     module_function
 
-    def registerAllUpstreamDialects(context)
-      dialectRegistry = mlirDialectRegistryCreate
-      mlirRegisterAllDialects(dialectRegistry)
-      mlirContextAppendDialectRegistry(context, dialectRegistry)
-      mlirDialectRegistryDestroy(dialectRegistry)
+    def register_all_upstream_dialects(context)
+      dialect_registry = mlirDialectRegistryCreate
+      mlirRegisterAllDialects(dialect_registry)
+      mlirContextAppendDialectRegistry(context, dialect_registry)
+      mlirDialectRegistryDestroy(dialect_registry)
     end
   end
 end
