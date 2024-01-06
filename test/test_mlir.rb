@@ -56,15 +56,46 @@ describe MLIR do
     MLIR::CAPI.mlirAttributeDump(attr)
   end
 
-  describe "with arith and test dialects" do
+  it "create a identifier" do
+    context = MLIR::CAPI.mlirContextCreate
+    MLIR::CAPI.mlirIdentifierGet(context, MLIR::CAPI.mlirStringRefCreateFromCString("value"))
+  end
+
+  it "create a named attribute" do
+    context = MLIR::CAPI.mlirContextCreate
+    index_zero_literal = MLIR::CAPI.mlirAttributeParseGet(context,
+                                                          MLIR::CAPI.mlirStringRefCreateFromCString("0 : index"))
+    identifier = MLIR::CAPI.mlirIdentifierGet(context, MLIR::CAPI.mlirStringRefCreateFromCString("value"))
+    MLIR::CAPI.mlirNamedAttributeGet(identifier, index_zero_literal)
+  end
+
+  it "create a empty module" do
+    context = MLIR::CAPI.mlirContextCreate
+    location = MLIR::CAPI.mlirLocationUnknownGet(context)
+    MLIR::CAPI.mlirModuleCreateEmpty(location)
+  end
+
+  describe "full test" do
     before do
       @context = MLIR::CAPI.mlirContextCreate
       MLIR::CAPI.register_all_upstream_dialects(@context)
-      MLIR::CAPI.mlirContextGetOrLoadDialect(@context, MLIR::CAPI.mlirStringRefCreateFromCString("arith"))
-      MLIR::CAPI.mlirContextGetOrLoadDialect(@context, MLIR::CAPI.mlirStringRefCreateFromCString("test"))
+      MLIR::CAPI.mlirContextGetOrLoadDialect(@context, MLIR::CAPI.mlirStringRefCreateFromCString("func"))
+      MLIR::CAPI.mlirContextGetOrLoadDialect(@context, MLIR::CAPI.mlirStringRefCreateFromCString("memref"))
+      MLIR::CAPI.mlirContextGetOrLoadDialect(@context, MLIR::CAPI.mlirStringRefCreateFromCString("shape"))
+      MLIR::CAPI.mlirContextGetOrLoadDialect(@context, MLIR::CAPI.mlirStringRefCreateFromCString("scf"))
     end
     after do
       MLIR::CAPI.mlirContextDestroy(@context)
+    end
+    it "construct And Traverse IR" do
+      location = MLIR::CAPI.mlirLocationUnknownGet(@context)
+      module_op = MLIR::CAPI.mlirModuleCreateEmpty(location)
+      module_body = MLIR::CAPI.mlirModuleGetBody(module_op)
+      memref_type = MLIR::CAPI.mlirTypeParseGet(@context, MLIR::CAPI.mlirStringRefCreateFromCString("memref<?xf32>"))
+      func_body_region = MLIR::CAPI.mlirRegionCreate
+      func_body_arg_types = MLIR::CAPI::MlirArrayRef.new([memref_type, memref_type]).to_ptr
+      func_body_arg_locs = MLIR::CAPI::MlirArrayRef.new([location, location]).to_ptr
+      func_body = MLIR::CAPI.mlirBlockCreate(2, func_body_arg_types, func_body_arg_locs)
     end
   end
 end

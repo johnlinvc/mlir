@@ -36,10 +36,34 @@ module MLIR
       Kernel.const_set(struct_symbol, klass)
     end
 
+    # mapped from MlirNamedAttribute
+    class MlirNamedAttribute < FFI::Struct
+      layout :name, MlirIdentifier.by_value,
+             :attribute, MlirAttribute.by_value
+    end
+
     # mapped from MlirStringRef
     class MlirStringRef < FFI::Struct
       layout :data, :pointer,
              :length, :size_t
+    end
+
+    class MlirArrayRef
+      attr_reader :array
+
+      def initialize(array)
+        klass = array.first.class
+        item_size = klass.size
+        @array_ref = FFI::MemoryPointer.new(:pointer, array.size * item_size)
+        @array = array.each_with_index.collect do |item, index|
+          x = klass.new(@array_ref + (index * item_size))
+          x[:storage] = item[:storage]
+        end
+      end
+
+      def to_ptr
+        @array_ref
+      end
     end
 
     attach_function :mlirContextCreate, [], MlirContext.by_value
@@ -53,9 +77,28 @@ module MLIR
     attach_function :mlirContextGetOrLoadDialect, [MlirContext.by_value, MlirStringRef.by_value], :void
     attach_function :mlirLocationUnknownGet, [MlirContext.by_value], MlirLocation.by_value
     attach_function :mlirIndexTypeGet, [MlirContext.by_value], MlirType.by_value
+    # Type related
     attach_function :mlirTypeDump, [MlirType.by_value], :void
+    attach_function :mlirTypeParseGet, [MlirContext.by_value, MlirStringRef.by_value], MlirType.by_value
+
+    # Attribute related
     attach_function :mlirAttributeParseGet, [MlirContext.by_value, MlirStringRef.by_value], MlirAttribute.by_value
     attach_function :mlirAttributeDump, [MlirAttribute.by_value], :void
+    attach_function :mlirNamedAttributeGet, [MlirIdentifier.by_value, MlirAttribute.by_value],
+                    MlirNamedAttribute.by_value
+
+    # Identifier related
+    attach_function :mlirIdentifierGet, [MlirContext.by_value, MlirStringRef.by_value], MlirIdentifier.by_value
+
+    # Module related
+    attach_function :mlirModuleCreateEmpty, [MlirLocation.by_value], MlirModule.by_value
+    attach_function :mlirModuleGetBody, [MlirModule.by_value], MlirBlock.by_value
+
+    # Region related
+    attach_function :mlirRegionCreate, [], MlirRegion.by_value
+
+    # Block related
+    attach_function :mlirBlockCreate, %i[size_t pointer pointer], MlirBlock.by_value
 
     module_function
 
