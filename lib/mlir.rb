@@ -128,6 +128,8 @@ module MLIR
     # Module related
     attach_function :mlirModuleCreateEmpty, [MlirLocation.by_value], MlirModule.by_value
     attach_function :mlirModuleGetBody, [MlirModule.by_value], MlirBlock.by_value
+    attach_function :mlirModuleGetOperation, [MlirModule.by_value], MlirOperation.by_value
+    attach_function :mlirModuleFromOperation, [MlirOperation.by_value], MlirModule.by_value
 
     # Region related
     attach_function :mlirRegionCreate, [], MlirRegion.by_value
@@ -151,6 +153,7 @@ module MLIR
 
     # Operation related
     attach_function :mlirOperationCreate, [MlirOperationState.by_ref], MlirOperation.by_value
+    attach_function :mlirOperationDump, [MlirOperation.by_value], :void
 
     module_function
 

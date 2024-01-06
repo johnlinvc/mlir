@@ -89,6 +89,7 @@ describe MLIR do
     end
     it "construct And Traverse IR" do
       location = MLIR::CAPI.mlirLocationUnknownGet(@context)
+      # start makeAndDumpAdd
       module_op = MLIR::CAPI.mlirModuleCreateEmpty(location)
       module_body = MLIR::CAPI.mlirModuleGetBody(module_op)
       memref_type = MLIR::CAPI.mlirTypeParseGet(@context, MLIR::CAPI.mlirStringRefCreateFromCString("memref<?xf32>"))
@@ -163,6 +164,66 @@ describe MLIR do
       MLIR::CAPI.mlirOperationStateAddOwnedRegions(loop_state, 1, loop_body_region)
       loop = MLIR::CAPI.mlirOperationCreate(loop_state)
       MLIR::CAPI.mlirBlockAppendOwnedOperation(func_body, loop)
+
+      # line 182 (53-57) in ir.c
+      # start polulating loop body
+      iv = MLIR::CAPI.mlirBlockGetArgument(loop_body, 0)
+      func_arg0 = MLIR::CAPI.mlirBlockGetArgument(func_body, 0)
+      func_arg1 = MLIR::CAPI.mlirBlockGetArgument(func_body, 1)
+      f32_type = MLIR::CAPI.mlirTypeParseGet(@context, MLIR::CAPI.mlirStringRefCreateFromCString("f32"))
+
+      # line 59-65 in ir.c
+      load_lhs_state = MLIR::CAPI.mlirOperationStateGet(MLIR::CAPI.mlirStringRefCreateFromCString("memref.load"),
+                                                        location)
+      load_lhs_operands = MLIR::CAPI::MlirArrayRef.new([func_arg0, iv])
+      MLIR::CAPI.mlirOperationStateAddOperands(load_lhs_state, 2, load_lhs_operands.to_typed_ptr)
+      MLIR::CAPI.mlirOperationStateAddResults(load_lhs_state, 1, f32_type)
+      load_lhs = MLIR::CAPI.mlirOperationCreate(load_lhs_state)
+      MLIR::CAPI.mlirBlockAppendOwnedOperation(loop_body, load_lhs)
+
+      # line 67-73 in ir.c
+      load_rhs_state = MLIR::CAPI.mlirOperationStateGet(MLIR::CAPI.mlirStringRefCreateFromCString("memref.load"),
+                                                        location)
+      load_rhs_operands = MLIR::CAPI::MlirArrayRef.new([func_arg1, iv])
+      MLIR::CAPI.mlirOperationStateAddOperands(load_rhs_state, 2, load_rhs_operands.to_typed_ptr)
+      MLIR::CAPI.mlirOperationStateAddResults(load_rhs_state, 1, f32_type)
+      load_rhs = MLIR::CAPI.mlirOperationCreate(load_rhs_state)
+      MLIR::CAPI.mlirBlockAppendOwnedOperation(loop_body, load_rhs)
+
+      # line 75-82 in ir.c
+      add_state = MLIR::CAPI.mlirOperationStateGet(MLIR::CAPI.mlirStringRefCreateFromCString("arith.addf"), location)
+      add_operands = MLIR::CAPI::MlirArrayRef.new([MLIR::CAPI.mlirOperationGetResult(load_lhs, 0),
+                                                   MLIR::CAPI.mlirOperationGetResult(load_rhs, 0)])
+      MLIR::CAPI.mlirOperationStateAddOperands(add_state, 2, add_operands.to_typed_ptr)
+      MLIR::CAPI.mlirOperationStateAddResults(add_state, 1, f32_type)
+      add = MLIR::CAPI.mlirOperationCreate(add_state)
+      MLIR::CAPI.mlirBlockAppendOwnedOperation(loop_body, add)
+
+      # line 84-90 in ir.c
+      store_state = MLIR::CAPI.mlirOperationStateGet(MLIR::CAPI.mlirStringRefCreateFromCString("memref.store"),
+                                                     location)
+      store_operands = MLIR::CAPI::MlirArrayRef.new([MLIR::CAPI.mlirOperationGetResult(add, 0), func_arg0, iv])
+      MLIR::CAPI.mlirOperationStateAddOperands(store_state, 3, store_operands.to_typed_ptr)
+      store = MLIR::CAPI.mlirOperationCreate(store_state)
+      MLIR::CAPI.mlirBlockAppendOwnedOperation(loop_body, store)
+
+      # line 91-94 in ir.c
+      yield_state = MLIR::CAPI.mlirOperationStateGet(MLIR::CAPI.mlirStringRefCreateFromCString("scf.yield"), location)
+      yield_op = MLIR::CAPI.mlirOperationCreate(yield_state)
+      MLIR::CAPI.mlirBlockAppendOwnedOperation(loop_body, yield_op)
+
+      # end polulating loop body
+
+      # line 184-190 in ir.c
+      ret_state = MLIR::CAPI.mlirOperationStateGet(MLIR::CAPI.mlirStringRefCreateFromCString("func.return"), location)
+      ret = MLIR::CAPI.mlirOperationCreate(ret_state)
+      MLIR::CAPI.mlirBlockAppendOwnedOperation(func_body, ret)
+      module_op1 = MLIR::CAPI.mlirModuleGetOperation(module_op)
+      MLIR::CAPI.mlirOperationDump(module_op1)
+      # end makeAndDumpAdd
+
+      # line 509 in ir.c
+      expect(MLIR::CAPI.mlirModuleFromOperation(module_op1).to_ptr).wont_equal(nil)
     end
   end
 end
