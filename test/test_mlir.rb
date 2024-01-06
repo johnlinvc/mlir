@@ -93,11 +93,12 @@ describe MLIR do
       module_body = MLIR::CAPI.mlirModuleGetBody(module_op)
       memref_type = MLIR::CAPI.mlirTypeParseGet(@context, MLIR::CAPI.mlirStringRefCreateFromCString("memref<?xf32>"))
       func_body_region = MLIR::CAPI.mlirRegionCreate
-      func_body_arg_types = MLIR::CAPI::MlirArrayRef.new([memref_type, memref_type]).to_ptr
-      func_body_arg_locs = MLIR::CAPI::MlirArrayRef.new([location, location]).to_ptr
+      func_body_arg_types = MLIR::CAPI::MlirArrayRef.new([memref_type, memref_type]).to_typed_ptr
+      func_body_arg_locs = MLIR::CAPI::MlirArrayRef.new([location, location]).to_typed_ptr
       func_body = MLIR::CAPI.mlirBlockCreate(2, func_body_arg_types, func_body_arg_locs)
       MLIR::CAPI.mlirRegionAppendOwnedBlock(func_body_region, func_body)
 
+      # line 111 in ir.c
       func_type_str = MLIR::CAPI.mlirStringRefCreateFromCString("(memref<?xf32>, memref<?xf32>) -> ()")
       func_type_attr = MLIR::CAPI.mlirAttributeParseGet(@context, func_type_str)
       func_type_id = MLIR::CAPI.mlirIdentifierGet(@context, MLIR::CAPI.mlirStringRefCreateFromCString("function_type"))
@@ -107,10 +108,12 @@ describe MLIR do
       named_func_name_attr = MLIR::CAPI.mlirNamedAttributeGet(func_name_id, func_name_attr)
       func_attrs = MLIR::CAPI::MlirArrayRef.new([named_func_type_attr, named_func_name_attr])
       func_state = MLIR::CAPI.mlirOperationStateGet(MLIR::CAPI.mlirStringRefCreateFromCString("func.func"), location)
-      MLIR::CAPI.mlirOperationStateAddAttributes(func_state, func_attrs.size, func_attrs.to_ptr)
-      MLIR::CAPI.mlirOperationStateAddOwnedRegions(func_state, 1, func_body_region.to_ptr)
+      MLIR::CAPI.mlirOperationStateAddAttributes(func_state, func_attrs.size, func_attrs.to_typed_ptr)
+      MLIR::CAPI.mlirOperationStateAddOwnedRegions(func_state, 1, func_body_region)
       func = MLIR::CAPI.mlirOperationCreate(func_state)
       MLIR::CAPI.mlirBlockInsertOwnedOperation(module_body, 0, func)
+
+      # line 131 in ir.c
     end
   end
 end

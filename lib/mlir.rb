@@ -54,15 +54,15 @@ module MLIR
       layout :name, MlirStringRef.by_value,
              :location, MlirLocation.by_value,
              :nResults, :int,
-             :results, :pointer,
+             :results, MlirType.by_ref,
              :nOperands, :int,
-             :operands, :pointer,
+             :operands, MlirValue.by_ref,
              :nRegions, :int,
-             :regions, :pointer,
+             :regions, MlirRegion.by_ref,
              :nSuccessors, :int,
-             :successors, :pointer,
+             :successors, MlirBlock.by_ref,
              :nAttributes, :int,
-             :attributes, :pointer,
+             :attributes, MlirNamedAttribute.by_ref,
              :enableResultTypeInference, :bool
     end
 
@@ -87,11 +87,16 @@ module MLIR
           item.members.each do |member|
             x[member] = item[member]
           end
+          x
         end
       end
 
       def to_ptr
         @array_ref
+      end
+
+      def to_typed_ptr
+        @array[0]
       end
     end
 
@@ -129,13 +134,14 @@ module MLIR
     attach_function :mlirRegionAppendOwnedBlock, [MlirRegion.by_value, MlirBlock.by_value], :void
 
     # Block related
-    attach_function :mlirBlockCreate, %i[size_t pointer pointer], MlirBlock.by_value
+    attach_function :mlirBlockCreate, [:size_t, MlirType.by_ref, MlirLocation.by_ref], MlirBlock.by_value
     attach_function :mlirBlockInsertOwnedOperation, [MlirBlock.by_value, :size_t, MlirOperation.by_value], :void
 
     # Operation related
     attach_function :mlirOperationStateGet, [MlirStringRef.by_value, MlirLocation.by_value], MlirOperationState.by_value
-    attach_function :mlirOperationStateAddAttributes, [MlirOperationState.by_ref, :int, :pointer], :void
-    attach_function :mlirOperationStateAddOwnedRegions, [MlirOperationState.by_ref, :int, :pointer], :void
+    attach_function :mlirOperationStateAddAttributes, [MlirOperationState.by_ref, :int, MlirNamedAttribute.by_ref],
+                    :void
+    attach_function :mlirOperationStateAddOwnedRegions, [MlirOperationState.by_ref, :int, MlirRegion.by_ref], :void
     attach_function :mlirOperationCreate, [MlirOperationState.by_ref], MlirOperation.by_value
 
     module_function
