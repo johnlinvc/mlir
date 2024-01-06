@@ -2,6 +2,7 @@
 
 require_relative "mlir/version"
 require "ffi"
+require "forwardable"
 
 module MLIR
   class Error < StandardError; end
@@ -48,16 +49,44 @@ module MLIR
              :length, :size_t
     end
 
+    # mapped from MlirOperationState
+    class MlirOperationState < FFI::Struct
+      layout :name, MlirStringRef.by_value,
+             :location, MlirLocation.by_value,
+             :nResults, :int,
+             :results, :pointer,
+             :nOperands, :int,
+             :operands, :pointer,
+             :nRegions, :int,
+             :regions, :pointer,
+             :nSuccessors, :int,
+             :successors, :pointer,
+             :nAttributes, :int,
+             :attributes, :pointer,
+             :enableResultTypeInference, :bool
+    end
+
+    # Helper class to create C array of Mlir C API structs
     class MlirArrayRef
-      attr_reader :array
+      attr_reader :array, :klass, :item_size
+
+      extend Forwardable
+      include Enumerable
+      def_delegators :@array, :each, :size
 
       def initialize(array)
-        klass = array.first.class
-        item_size = klass.size
+        @klass = array.first.class
+        @item_size = klass.size
         @array_ref = FFI::MemoryPointer.new(:pointer, array.size * item_size)
+        copy_values(array)
+      end
+
+      def copy_values(array)
         @array = array.each_with_index.collect do |item, index|
           x = klass.new(@array_ref + (index * item_size))
-          x[:storage] = item[:storage]
+          item.members.each do |member|
+            x[member] = item[member]
+          end
         end
       end
 
@@ -77,6 +106,7 @@ module MLIR
     attach_function :mlirContextGetOrLoadDialect, [MlirContext.by_value, MlirStringRef.by_value], :void
     attach_function :mlirLocationUnknownGet, [MlirContext.by_value], MlirLocation.by_value
     attach_function :mlirIndexTypeGet, [MlirContext.by_value], MlirType.by_value
+
     # Type related
     attach_function :mlirTypeDump, [MlirType.by_value], :void
     attach_function :mlirTypeParseGet, [MlirContext.by_value, MlirStringRef.by_value], MlirType.by_value
@@ -96,9 +126,13 @@ module MLIR
 
     # Region related
     attach_function :mlirRegionCreate, [], MlirRegion.by_value
+    attach_function :mlirRegionAppendOwnedBlock, [MlirRegion.by_value, MlirBlock.by_value], :void
 
     # Block related
     attach_function :mlirBlockCreate, %i[size_t pointer pointer], MlirBlock.by_value
+
+    # Operation related
+    attach_function :mlirOperationStateGet, [MlirStringRef.by_value, MlirLocation.by_value], MlirOperationState.by_value
 
     module_function
 
