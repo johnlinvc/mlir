@@ -141,6 +141,18 @@ describe MLIR do
       loop_body = MLIR::CAPI.mlirBlockCreate(0, nil, nil)
       MLIR::CAPI.mlirBlockAddArgument(loop_body, index_type, location)
       MLIR::CAPI.mlirRegionAppendOwnedBlock(loop_body_region, loop_body)
+
+      # line 160-170 in ir.c
+      line_one_literal = MLIR::CAPI.mlirAttributeParseGet(@context,
+                                                          MLIR::CAPI.mlirStringRefCreateFromCString("1 : index"))
+      index_one_value_id = MLIR::CAPI.mlirIdentifierGet(@context, MLIR::CAPI.mlirStringRefCreateFromCString("value"))
+      index_one_value_attr = MLIR::CAPI.mlirNamedAttributeGet(index_one_value_id, line_one_literal)
+      const_one_state = MLIR::CAPI.mlirOperationStateGet(MLIR::CAPI.mlirStringRefCreateFromCString("arith.constant"),
+                                                         location)
+      MLIR::CAPI.mlirOperationStateAddResults(const_one_state, 1, index_type)
+      MLIR::CAPI.mlirOperationStateAddAttributes(const_one_state, 1, index_one_value_attr)
+      const_one = MLIR::CAPI.mlirOperationCreate(const_one_state)
+      MLIR::CAPI.mlirBlockAppendOwnedOperation(func_body, const_one)
     end
   end
 end
