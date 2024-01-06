@@ -114,6 +114,27 @@ describe MLIR do
       MLIR::CAPI.mlirBlockInsertOwnedOperation(module_body, 0, func)
 
       # line 131 in ir.c
+      index_type = MLIR::CAPI.mlirTypeParseGet(@context, MLIR::CAPI.mlirStringRefCreateFromCString("index"))
+      index_zero_literal = MLIR::CAPI.mlirAttributeParseGet(@context,
+                                                            MLIR::CAPI.mlirStringRefCreateFromCString("0 : index"))
+      index_zero_id = MLIR::CAPI.mlirIdentifierGet(@context, MLIR::CAPI.mlirStringRefCreateFromCString("value"))
+      index_zero_value_attr = MLIR::CAPI.mlirNamedAttributeGet(index_zero_id, index_zero_literal)
+      const_zero_state = MLIR::CAPI.mlirOperationStateGet(MLIR::CAPI.mlirStringRefCreateFromCString("arith.constant"),
+                                                          location)
+      MLIR::CAPI.mlirOperationStateAddResults(const_zero_state, 1, index_type)
+      MLIR::CAPI.mlirOperationStateAddAttributes(const_zero_state, 1, index_zero_value_attr)
+      const_zero = MLIR::CAPI.mlirOperationCreate(const_zero_state)
+      MLIR::CAPI.mlirBlockAppendOwnedOperation(func_body, const_zero)
+
+      # line 145 in ir.c
+      func_arg0 = MLIR::CAPI.mlirBlockGetArgument(func_body, 0)
+      const_zero_value = MLIR::CAPI.mlirOperationGetResult(const_zero, 0)
+      dim_operands = MLIR::CAPI::MlirArrayRef.new([func_arg0, const_zero_value])
+      dim_state = MLIR::CAPI.mlirOperationStateGet(MLIR::CAPI.mlirStringRefCreateFromCString("memref.dim"), location)
+      MLIR::CAPI.mlirOperationStateAddOperands(dim_state, 2, dim_operands.to_typed_ptr)
+      MLIR::CAPI.mlirOperationStateAddResults(dim_state, 1, index_type)
+      dim = MLIR::CAPI.mlirOperationCreate(dim_state)
+      MLIR::CAPI.mlirBlockAppendOwnedOperation(func_body, dim)
     end
   end
 end

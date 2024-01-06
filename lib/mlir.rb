@@ -136,12 +136,19 @@ module MLIR
     # Block related
     attach_function :mlirBlockCreate, [:size_t, MlirType.by_ref, MlirLocation.by_ref], MlirBlock.by_value
     attach_function :mlirBlockInsertOwnedOperation, [MlirBlock.by_value, :size_t, MlirOperation.by_value], :void
+    attach_function :mlirBlockAppendOwnedOperation, [MlirBlock.by_value, MlirOperation.by_value], :void
+    attach_function :mlirBlockGetArgument, [MlirBlock.by_value, :int], MlirValue.by_value
 
-    # Operation related
+    # OperationState related
     attach_function :mlirOperationStateGet, [MlirStringRef.by_value, MlirLocation.by_value], MlirOperationState.by_value
     attach_function :mlirOperationStateAddAttributes, [MlirOperationState.by_ref, :int, MlirNamedAttribute.by_ref],
                     :void
     attach_function :mlirOperationStateAddOwnedRegions, [MlirOperationState.by_ref, :int, MlirRegion.by_ref], :void
+    attach_function :mlirOperationStateAddResults, [MlirOperationState.by_ref, :int, MlirType.by_ref], :void
+    attach_function :mlirOperationStateAddOperands, [MlirOperationState.by_ref, :int, MlirValue.by_ref], :void
+    attach_function :mlirOperationGetResult, [MlirOperation.by_value, :int], MlirValue.by_value
+
+    # Operation related
     attach_function :mlirOperationCreate, [MlirOperationState.by_ref], MlirOperation.by_value
 
     module_function

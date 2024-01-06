@@ -16,6 +16,7 @@ Layout/LineLength:
 Metrics/BlockLength:
   AllowedMethods:
   - describe
+  - it
 
 require:
 - rubocop-minitest
