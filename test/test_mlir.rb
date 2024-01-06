@@ -135,6 +135,12 @@ describe MLIR do
       MLIR::CAPI.mlirOperationStateAddResults(dim_state, 1, index_type)
       dim = MLIR::CAPI.mlirOperationCreate(dim_state)
       MLIR::CAPI.mlirBlockAppendOwnedOperation(func_body, dim)
+
+      # line 155 in ir.c
+      loop_body_region = MLIR::CAPI.mlirRegionCreate
+      loop_body = MLIR::CAPI.mlirBlockCreate(0, nil, nil)
+      MLIR::CAPI.mlirBlockAddArgument(loop_body, index_type, location)
+      MLIR::CAPI.mlirRegionAppendOwnedBlock(loop_body_region, loop_body)
     end
   end
 end
