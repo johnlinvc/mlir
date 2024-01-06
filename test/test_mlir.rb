@@ -105,8 +105,12 @@ describe MLIR do
       func_name_attr = MLIR::CAPI.mlirAttributeParseGet(@context, MLIR::CAPI.mlirStringRefCreateFromCString("\"add\""))
       func_name_id = MLIR::CAPI.mlirIdentifierGet(@context, MLIR::CAPI.mlirStringRefCreateFromCString("sym_name"))
       named_func_name_attr = MLIR::CAPI.mlirNamedAttributeGet(func_name_id, func_name_attr)
-      func_attrs = MLIR::CAPI::MlirArrayRef.new([named_func_type_attr, named_func_name_attr]).to_ptr
+      func_attrs = MLIR::CAPI::MlirArrayRef.new([named_func_type_attr, named_func_name_attr])
       func_state = MLIR::CAPI.mlirOperationStateGet(MLIR::CAPI.mlirStringRefCreateFromCString("func.func"), location)
+      MLIR::CAPI.mlirOperationStateAddAttributes(func_state, func_attrs.size, func_attrs.to_ptr)
+      MLIR::CAPI.mlirOperationStateAddOwnedRegions(func_state, 1, func_body_region.to_ptr)
+      func = MLIR::CAPI.mlirOperationCreate(func_state)
+      MLIR::CAPI.mlirBlockInsertOwnedOperation(module_body, 0, func)
     end
   end
 end
