@@ -153,6 +153,16 @@ describe MLIR do
       MLIR::CAPI.mlirOperationStateAddAttributes(const_one_state, 1, index_one_value_attr)
       const_one = MLIR::CAPI.mlirOperationCreate(const_one_state)
       MLIR::CAPI.mlirBlockAppendOwnedOperation(func_body, const_one)
+
+      # line 172-180 in ir.c
+      dim_value = MLIR::CAPI.mlirOperationGetResult(dim, 0)
+      const_one_value = MLIR::CAPI.mlirOperationGetResult(const_one, 0)
+      loop_operands = MLIR::CAPI::MlirArrayRef.new([const_zero_value, dim_value, const_one_value])
+      loop_state = MLIR::CAPI.mlirOperationStateGet(MLIR::CAPI.mlirStringRefCreateFromCString("scf.for"), location)
+      MLIR::CAPI.mlirOperationStateAddOperands(loop_state, 3, loop_operands.to_typed_ptr)
+      MLIR::CAPI.mlirOperationStateAddOwnedRegions(loop_state, 1, loop_body_region)
+      loop = MLIR::CAPI.mlirOperationCreate(loop_state)
+      MLIR::CAPI.mlirBlockAppendOwnedOperation(func_body, loop)
     end
   end
 end
