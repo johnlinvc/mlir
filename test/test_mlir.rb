@@ -218,12 +218,24 @@ describe MLIR do
       ret_state = MLIR::CAPI.mlirOperationStateGet(MLIR::CAPI.mlirStringRefCreateFromCString("func.return"), location)
       ret = MLIR::CAPI.mlirOperationCreate(ret_state)
       MLIR::CAPI.mlirBlockAppendOwnedOperation(func_body, ret)
+      # module_op1 maps to module, because module is a keyword in ruby
       module_op1 = MLIR::CAPI.mlirModuleGetOperation(module_op)
       MLIR::CAPI.mlirOperationDump(module_op1)
       # end makeAndDumpAdd
 
       # line 509 in ir.c
       expect(MLIR::CAPI.mlirModuleFromOperation(module_op1).to_ptr).wont_equal(nil)
+
+      # line 511 in ir.c
+      # start collectStats (Skipped for now)
+      # end collectStats (Skipped for now)
+
+      # line 515 in ir.c
+      # start printFirstOfEach (Skipped for now)
+      # end printFirstOfEach (Skipped for now)
+
+      # line 517 in ir.c
+      MLIR::CAPI.mlirModuleDestroy(module_op)
     end
   end
 end

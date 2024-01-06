@@ -130,6 +130,7 @@ module MLIR
     attach_function :mlirModuleGetBody, [MlirModule.by_value], MlirBlock.by_value
     attach_function :mlirModuleGetOperation, [MlirModule.by_value], MlirOperation.by_value
     attach_function :mlirModuleFromOperation, [MlirOperation.by_value], MlirModule.by_value
+    attach_function :mlirModuleDestroy, [MlirModule.by_value], :void
 
     # Region related
     attach_function :mlirRegionCreate, [], MlirRegion.by_value
