@@ -6,11 +6,11 @@ require "forwardable"
 
 module MLIR
   class Error < StandardError; end
-
+  MLIR::LIB_NAME = ENV["MLIR_LIB_NAME"] || "MLIR-C"
   # FFI wrapper for MLIR C API
   module CAPI
     extend FFI::Library
-    ffi_lib "MLIR-C"
+    ffi_lib(MLIR::LIB_NAME)
     IR_C_API_STRUCT_SYMBOLS = %i[
       MlirAsmState
       MlirBytecodeWriterConfig
@@ -36,6 +36,12 @@ module MLIR
       klass.layout :storage, :pointer
       Kernel.const_set(struct_symbol, klass)
     end
+
+    class MlirDialectHandle < FFI::Struct
+      layout :ptr, :pointer
+    end
+
+
 
     # mapped from MlirNamedAttribute
     class MlirNamedAttribute < FFI::Struct
@@ -109,6 +115,7 @@ module MLIR
     attach_function :mlirContextAppendDialectRegistry, [MlirContext.by_value, MlirDialectRegistry.by_value], :void
     attach_function :mlirStringRefCreateFromCString, [:string], MlirStringRef.by_value
     attach_function :mlirContextGetOrLoadDialect, [MlirContext.by_value, MlirStringRef.by_value], :void
+    attach_function :mlirDialectHandleRegisterDialect, [MlirDialectHandle.by_value, MlirContext.by_value], :void
     attach_function :mlirLocationUnknownGet, [MlirContext.by_value], MlirLocation.by_value
     attach_function :mlirIndexTypeGet, [MlirContext.by_value], MlirType.by_value
 
@@ -131,6 +138,7 @@ module MLIR
     attach_function :mlirModuleGetOperation, [MlirModule.by_value], MlirOperation.by_value
     attach_function :mlirModuleFromOperation, [MlirOperation.by_value], MlirModule.by_value
     attach_function :mlirModuleDestroy, [MlirModule.by_value], :void
+    attach_function :mlirModuleCreateParse, [MlirContext.by_value, MlirStringRef.by_value], MlirModule.by_value
 
     # Region related
     attach_function :mlirRegionCreate, [], MlirRegion.by_value
